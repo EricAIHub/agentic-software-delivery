@@ -1,4 +1,6 @@
-# AI Delivery Agent MVP
+# Agentic Software Delivery
+
+A multi-agent engineering workflow that converts product requirements into repository-aware implementation plans, code patches, test plans, and review reports.
 
 A local MVP for a **multi-agent engineering delivery system**: it takes a product requirement, scans a repository, plans the implementation, generates a proposed patch, drafts a test plan, and reviews risk.
 
