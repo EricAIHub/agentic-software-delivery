@@ -10,12 +10,12 @@ This project is an MVP for an **AI-driven software delivery pipeline**. Instead 
 
 Modern software delivery has a persistent gap between **product requirements** and **verified code changes**.
 
-In a typical engineering workflow, a requirement has to pass through multiple lossy stages:
+In a typical engineering workflow, a requirement passes through multiple lossy stages:
 
 1. Product requirements are often ambiguous or incomplete.
 2. Engineers manually interpret business intent and edge cases.
 3. Developers search the repository to understand the existing architecture.
-4. Implementation plans are often informal and not consistently reviewed.
+4. Implementation plans are often informal and inconsistently reviewed.
 5. Tests are written late, inconsistently, or skipped under time pressure.
 6. Code review depends heavily on human attention and reviewer availability.
 
@@ -29,6 +29,24 @@ This creates avoidable problems:
 - Weak reuse of repository context and historical engineering knowledge.
 
 This project turns that process into an **agentic software delivery pipeline**: a structured, traceable, multi-step workflow that helps move from natural language requirements to implementation-ready code changes.
+
+---
+
+## Core pain point solved
+
+The project solves the problem of turning vague or semi-structured requirements into a more reliable engineering execution plan.
+
+The core pain point is not simply “generating code.” The real problem is that software delivery requires a long chain of reasoning:
+
+- What does the requirement actually mean?
+- What are the acceptance criteria?
+- Which parts of the repository are relevant?
+- What files may need to change?
+- What implementation path is least risky?
+- What tests are needed to verify correctness?
+- What risks should be reviewed before merging?
+
+A single prompt is usually too shallow for this process. This project models software delivery as a **multi-agent, long-context, multi-step reasoning workflow**.
 
 ---
 
@@ -58,24 +76,6 @@ The final output includes:
 - Test plan
 - Review report
 - Risk assessment
-
----
-
-## Core pain point solved
-
-The project solves the problem of turning vague or semi-structured requirements into a more reliable engineering execution plan.
-
-The core pain point is not simply “generating code.” The real problem is that software delivery requires a long chain of reasoning:
-
-- What does the requirement actually mean?
-- What are the acceptance criteria?
-- Which parts of the repository are relevant?
-- What files may need to change?
-- What implementation path is least risky?
-- What tests are needed to verify correctness?
-- What risks should be reviewed before merging?
-
-A single prompt is usually too shallow for this process. This project models software delivery as a **multi-agent, long-context, multi-step reasoning workflow**.
 
 ---
 
@@ -249,8 +249,7 @@ agentic-software-delivery/
 ├── tests/
 ├── Makefile
 ├── pyproject.toml
-├── README.md
-└── .gitignore
+└── README.md
 ```
 
 ---
@@ -288,19 +287,18 @@ python -m pip install -e ".[dev]"
 
 ### 4. Optional: configure environment variables
 
-If you want to connect the workflow to an LLM provider, create a `.env` file:
+The project can run in mock mode without an LLM API key.
 
-```bash
-cp .env.example .env
-```
+If you want to connect it to an LLM provider, create a `.env` file in the repository root:
 
-Then add your API key:
-
-```text
+```env
 OPENAI_API_KEY=your_api_key_here
+OPENAI_MODEL=gpt-4o-mini
+AGENT_RUNS_DIR=.agent_runs
+MAX_FILE_BYTES=20000
 ```
 
-If no API key is configured, the project can still run in mock mode for local demonstration.
+Do not commit your real `.env` file to GitHub.
 
 ---
 
@@ -319,12 +317,13 @@ Expected output:
 
 ```text
 .agent_runs/sample/
-├── requirement_analysis.md
-├── repo_scan.md
-├── implementation_plan.md
-├── patch.diff
-├── test_plan.md
-└── review_report.md
+├── 01_requirement.json
+├── 02_repo_summary.json
+├── 03_plan.md
+├── 04_patch.diff
+├── 05_test_plan.md
+├── 06_review.md
+└── result.json
 ```
 
 ---
@@ -433,6 +432,24 @@ That is why this project is better suited for high-context LLM usage and larger 
 
 ---
 
+## Output artifacts
+
+Each run generates a set of artifacts that make the reasoning process inspectable.
+
+| File | Purpose |
+|---|---|
+| `01_requirement.json` | Structured requirement analysis |
+| `02_repo_summary.json` | Repository scan result and context summary |
+| `03_plan.md` | Implementation plan |
+| `04_patch.diff` | Candidate unified diff patch |
+| `05_test_plan.md` | Test and verification plan |
+| `06_review.md` | Automated review report |
+| `result.json` | Aggregated machine-readable result |
+
+This design keeps each reasoning stage explicit instead of hiding the full process inside one opaque model response.
+
+---
+
 ## Testing
 
 Run the test suite:
@@ -471,6 +488,19 @@ make test
 
 ---
 
+## Evaluation ideas
+
+| Dimension | Description |
+|---|---|
+| Requirement accuracy | Whether the system correctly extracts user intent and acceptance criteria |
+| Repository awareness | Whether the implementation plan references relevant files and architecture |
+| Patch quality | Whether generated changes are minimal, readable, and consistent |
+| Test coverage | Whether proposed tests cover normal and edge cases |
+| Review usefulness | Whether the review report catches meaningful risks |
+| Delivery efficiency | Whether the workflow reduces manual planning and review time |
+
+---
+
 ## Current limitations
 
 This is an MVP, so several production capabilities are intentionally simplified.
@@ -500,21 +530,6 @@ Planned improvements:
 - Security scanning integration
 - PR summary generation
 - Human approval workflow
-
----
-
-## Evaluation ideas
-
-Possible evaluation dimensions:
-
-| Dimension | Description |
-|---|---|
-| Requirement accuracy | Whether the system correctly extracts user intent and acceptance criteria |
-| Repository awareness | Whether the implementation plan references relevant files and architecture |
-| Patch quality | Whether generated changes are minimal, readable, and consistent |
-| Test coverage | Whether proposed tests cover normal and edge cases |
-| Review usefulness | Whether the review report catches meaningful risks |
-| Delivery efficiency | Whether the workflow reduces manual planning and review time |
 
 ---
 
